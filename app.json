@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "InnoCon Maintenance",
+    "name": "FactoPulse",
     "slug": "mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,8 @@
     "scheme": "mobile",
     "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.innocontech.factopulse"
     },
     "android": {
       "adaptiveIcon": {
@@ -18,7 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.innocontech.innoconmaintenance"
+      "package": "com.innocontech.factopulse"
     },
     "web": {
       "output": "static",
@@ -43,7 +44,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "InnoCon Maintenance uses the camera to scan machine QR labels."
+          "cameraPermission": "FactoPulse uses the camera to scan machine QR labels."
         }
       ],
       "expo-sharing"

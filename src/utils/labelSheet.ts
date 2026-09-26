@@ -27,7 +27,7 @@ export function buildLabelSheetHtml(labels: LabelInfo[]): string {
       <div class="label">
         <div class="qr">${svg}</div>
         <div class="info">
-          <div class="brand">InnoCon Maintenance</div>
+          <div class="brand">FactoPulse</div>
           <div class="name">${escapeHtml(label.name || 'Machine')}</div>
           ${label.location ? `<div class="loc">${escapeHtml(label.location)}</div>` : ''}
           <div class="hint">Scan to start or finish work</div>

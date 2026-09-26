@@ -77,7 +77,7 @@ export default function TeamScreen() {
   async function shareCode() {
     try {
       await Share.share({
-        message: `Join ${companyName || 'our company'} on InnoCon Maintenance. Open the app, tap Create account, then "Join with a code" and enter: ${joinCode}`,
+        message: `Join ${companyName || 'our company'} on FactoPulse. Open the app, tap Create account, then "Join with a code" and enter: ${joinCode}`,
       });
     } catch {
       // sharing was cancelled; nothing to do

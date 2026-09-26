@@ -100,7 +100,7 @@ export default function LoginScreen() {
             <Icon name="wrench" size={40} color="#FFFFFF" />
           </View>
           <Text style={{ color: '#FFFFFF', fontSize: 30, fontWeight: '800' }}>
-            InnoCon Maintenance
+            FactoPulse
           </Text>
           <Text style={{ color: colors.headerSub, fontSize: 15, marginTop: 6 }}>
             Track machines. Cut downtime. Decide with data.

@@ -170,7 +170,17 @@ export default function Dashboard() {
     <Screen
       title="Dashboard"
       subtitle="Equipment health and repair spend"
-      right={<IconButton icon="logout" label="Log out" onPress={logOut} />}
+      right={
+        <View style={{ flexDirection: 'row' }}>
+          <IconButton
+            icon="team"
+            label="Team"
+            onPress={() => router.push('/team')}
+            style={{ marginRight: 8 }}
+          />
+          <IconButton icon="logout" label="Log out" onPress={logOut} />
+        </View>
+      }
       refreshing={refreshing}
       onRefresh={refresh}
     >

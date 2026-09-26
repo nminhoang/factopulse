@@ -9,10 +9,11 @@ import {
   View,
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
-import { Button, Field, Icon } from '../ui/kit';
+import { Button, Field, Icon, Segmented } from '../ui/kit';
 import { colors } from '../ui/theme';
 
 export default function LoginScreen() {
+  const [mode, setMode] = useState<'Sign in' | 'Create account'>('Sign in');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -32,8 +33,47 @@ export default function LoginScreen() {
       return;
     }
 
+    // The root layout checks whether this account belongs to a company
+    // yet and sends it to the right place (dashboard, or set up a company).
     router.replace('/dashboard');
   }
+
+  async function signUp() {
+    if (password.length < 6) {
+      Alert.alert('Password too short', 'Use at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+    });
+
+    setLoading(false);
+
+    if (error) {
+      Alert.alert('Could not create account', error.message);
+      return;
+    }
+
+    if (data.session) {
+      // No email confirmation required: continue straight to setting up
+      // a company.
+      router.replace('/setup-company');
+      return;
+    }
+
+    Alert.alert(
+      'Check your email',
+      "We sent a confirmation link to " + email.trim() + ". Confirm it, then come back and sign in."
+    );
+    setMode('Sign in');
+  }
+
+  const busy = loading;
+  const canSubmit = email.trim().length > 0 && password.length > 0;
 
   return (
     <KeyboardAvoidingView
@@ -74,11 +114,15 @@ export default function LoginScreen() {
             padding: 20,
           }}
         >
-          <Text
-            style={{ fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 16 }}
-          >
-            Sign in
-          </Text>
+          <Segmented
+            label=" "
+            value={mode}
+            onChange={(v) => setMode(v as 'Sign in' | 'Create account')}
+            options={[
+              { value: 'Sign in', tone: 'info' },
+              { value: 'Create account', tone: 'good' },
+            ]}
+          />
 
           <Field
             label="Email"
@@ -95,24 +139,30 @@ export default function LoginScreen() {
           <Field
             label="Password"
             icon="lock"
-            placeholder="Your password"
+            placeholder={mode === 'Create account' ? 'At least 6 characters' : 'Your password'}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoCapitalize="none"
-            textContentType="password"
-            onSubmitEditing={signIn}
+            textContentType={mode === 'Create account' ? 'newPassword' : 'password'}
+            onSubmitEditing={mode === 'Sign in' ? signIn : signUp}
             returnKeyType="go"
           />
 
           <Button
-            title="Log in"
+            title={mode === 'Sign in' ? 'Log in' : 'Create account'}
             variant="accent"
-            loading={loading}
-            disabled={!email.trim() || !password}
-            onPress={signIn}
+            loading={busy}
+            disabled={!canSubmit}
+            onPress={mode === 'Sign in' ? signIn : signUp}
             style={{ marginTop: 6 }}
           />
+
+          {mode === 'Create account' ? (
+            <Text style={{ color: colors.muted, fontSize: 12, marginTop: 10, textAlign: 'center' }}>
+              Next you'll create a new company, or join one with an invite code from a teammate.
+            </Text>
+          ) : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -113,6 +113,8 @@ export const ICONS = {
   print: { ios: 'printer.fill', android: 'print' },
   share: { ios: 'square.and.arrow.up', android: 'share' },
   flash: { ios: 'bolt.fill', android: 'flashlight_on' },
+  team: { ios: 'person.2.fill', android: 'group' },
+  copy: { ios: 'doc.on.doc', android: 'content_copy' },
 } satisfies Record<string, SymbolName>;
 
 export type IconName = keyof typeof ICONS;

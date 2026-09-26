@@ -1,50 +1,53 @@
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { supabase } from '../../lib/supabase';
 import { colors } from '../ui/theme';
+import { SessionProvider, useSession } from '../utils/session';
 
-export default function RootLayout() {
+/**
+ * Route guard:
+ * - signed out              -> only the login screen
+ * - signed in, no company   -> only Set Up Your Company
+ * - signed in, in a company -> everything else, never login or setup
+ */
+function Gate({ children }: { children: ReactNode }) {
   const router = useRouter();
   const segments = useSegments() as string[];
+  const { checked, signedIn, companyId } = useSession();
 
-  const [checked, setChecked] = useState(false);
-  const [signedIn, setSignedIn] = useState(false);
-
-  // Track whether someone is logged in.
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setSignedIn(!!data.session);
-      setChecked(true);
-    });
-
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSignedIn(!!session);
-    });
-
-    return () => listener.subscription.unsubscribe();
-  }, []);
-
-  // Route guard: signed-out users can only see the login screen;
-  // signed-in users skip the login screen.
   useEffect(() => {
     if (!checked) return;
 
     const onLoginScreen = segments.length === 0 || segments[0] === 'index';
+    const onSetupScreen = segments[0] === 'setup-company';
 
-    if (!signedIn && !onLoginScreen) {
-      router.replace('/');
-    } else if (signedIn && onLoginScreen) {
-      router.replace('/dashboard');
+    if (!signedIn) {
+      if (!onLoginScreen) router.replace('/');
+      return;
     }
-  }, [checked, signedIn, segments, router]);
 
+    if (companyId === undefined) return; // still loading, don't bounce anywhere yet
+
+    if (companyId === null) {
+      if (!onSetupScreen) router.replace('/setup-company');
+      return;
+    }
+
+    if (onLoginScreen || onSetupScreen) router.replace('/dashboard');
+  }, [checked, signedIn, companyId, segments, router]);
+
+  return <>{children}</>;
+}
+
+export default function RootLayout() {
   return (
-    <>
+    <SessionProvider>
       <StatusBar style="light" />
-      <Stack
-        screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}
-      />
-    </>
+      <Gate>
+        <Stack
+          screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}
+        />
+      </Gate>
+    </SessionProvider>
   );
 }

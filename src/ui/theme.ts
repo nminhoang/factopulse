@@ -45,6 +45,21 @@ export const WORK_TYPE_LABELS: Record<string, string> = {
   Other: 'Other',
 };
 
+/** Fixed color per breakdown cause (fleet-wide "top causes" chart). Distinct hues from
+ *  WORK_TYPE_COLORS on purpose - a different chart, so no risk of the two being confused. */
+export const CAUSE_COLORS: Record<string, string> = {
+  'Wear / age': '#F59E0B',
+  Electrical: '#EF4444',
+  Mechanical: '#0EA5E9',
+  Operator: '#8B5CF6',
+  'Material / process': '#14B8A6',
+  Unknown: '#94A3B8',
+};
+
+export function causeColor(cause: string): string {
+  return CAUSE_COLORS[cause] ?? CAUSE_COLORS.Unknown;
+}
+
 export function workTypeColor(type: string): string {
   return WORK_TYPE_COLORS[type] ?? WORK_TYPE_COLORS.Other;
 }

@@ -17,6 +17,7 @@ import {
   StatCard,
 } from '../ui/kit';
 import {
+  causeColor,
   colors,
   money,
   recommendationTone,
@@ -30,6 +31,7 @@ import {
   calculateAssetMetrics,
   calculateHealthIndex,
   computeAssetStats,
+  downtimeByCause,
   downtimeByType,
   isInProgress,
   normalizeWorkType,
@@ -164,6 +166,13 @@ export default function Dashboard() {
     .filter((row) => row.value > 0)
     .sort((a, b) => b.value - a.value);
 
+  const causeRows = downtimeByCause(history, 365, now).map((row) => ({
+    label: row.cause,
+    value: row.hours,
+    color: causeColor(row.cause),
+    display: `${formatHours(row.hours)} \u00b7 ${Math.round(row.cumulativePct)}%`,
+  }));
+
   /* ---------------------------------------------------------------- screen */
 
   return (
@@ -271,6 +280,19 @@ export default function Dashboard() {
           <HBarList rows={reasonRows} />
         )}
         <Text style={{ color: colors.faint, fontSize: 12 }}>All machines, last 12 months.</Text>
+      </Card>
+
+      <SectionTitle>Top Breakdown Causes</SectionTitle>
+      <Card>
+        {causeRows.length === 0 ? (
+          <EmptyText>No breakdowns recorded yet. Causes show up here once you log one on Finish Work.</EmptyText>
+        ) : (
+          <HBarList rows={causeRows} />
+        )}
+        <Text style={{ color: colors.faint, fontSize: 12 }}>
+          Unplanned breakdowns only, last 12 months. % is the running share of total breakdown downtime -
+          the top rows are where fixing the root cause saves the most hours.
+        </Text>
       </Card>
 
       <SectionTitle>Priority Machines</SectionTitle>

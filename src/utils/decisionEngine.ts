@@ -301,6 +301,67 @@ export function downtimeByMonth(
   return buckets.map(({ label, hours }) => ({ label, hours }));
 }
 
+/* ---------------------------------------------------------------- causes */
+
+/** Canonical list of breakdown causes, shown in the Finish Work form and used for the
+ *  fleet-wide "top causes" chart. Keep this the single source of truth. */
+export const CAUSES = [
+  'Wear / age',
+  'Electrical',
+  'Mechanical',
+  'Operator',
+  'Material / process',
+  'Unknown',
+] as const;
+
+export type Cause = (typeof CAUSES)[number];
+
+/** Anything missing or not on the fixed list becomes "Unknown" (old records had no cause field). */
+export function normalizeCause(value: string | null | undefined): Cause {
+  const text = String(value || '').trim();
+  const exact = CAUSES.find((cause) => cause.toLowerCase() === text.toLowerCase());
+  return exact ?? 'Unknown';
+}
+
+/**
+ * Fleet-wide downtime hours by root cause, over the last `days` days, breakdown
+ * (unplanned) records only - a cause is only ever recorded on those. Sorted worst
+ * first with a running cumulative percentage, i.e. a Pareto ordering: the first
+ * couple of rows are usually most of the total.
+ */
+export function downtimeByCause(
+  history: any[],
+  days: number = 365,
+  now: Date = new Date()
+): { cause: Cause; hours: number; pct: number; cumulativePct: number }[] {
+  const totals = new Map<Cause, number>(CAUSES.map((cause) => [cause, 0]));
+
+  for (const item of history || []) {
+    if (isPlanned(item)) continue;
+    const date = eventDate(item);
+    if (!date) continue;
+    if ((now.getTime() - date.getTime()) / MS_PER_DAY > days) continue;
+    const cause = normalizeCause(item.cause);
+    totals.set(cause, (totals.get(cause) ?? 0) + recordDowntimeHours(item, now));
+  }
+
+  const grandTotal = Array.from(totals.values()).reduce((sum, hours) => sum + hours, 0);
+
+  const rows = CAUSES.map((cause) => ({ cause, hours: totals.get(cause) ?? 0 }))
+    .filter((row) => row.hours > 0)
+    .sort((a, b) => b.hours - a.hours);
+
+  let running = 0;
+  return rows.map((row) => {
+    running += row.hours;
+    return {
+      ...row,
+      pct: grandTotal > 0 ? (row.hours / grandTotal) * 100 : 0,
+      cumulativePct: grandTotal > 0 ? (running / grandTotal) * 100 : 0,
+    };
+  });
+}
+
 /** Simple maintenance KPIs from the last 12 months. */
 export function calculateWorkStats(history: any[], now: Date = new Date()) {
   let repairSum = 0;

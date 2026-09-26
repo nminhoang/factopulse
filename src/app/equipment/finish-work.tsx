@@ -4,11 +4,10 @@ import { Alert, Text, View } from 'react-native';
 import { supabase } from '../../../lib/supabase';
 import { Button, Card, ChipGroup, Field, KeyValue, Pill, Screen } from '../../ui/kit';
 import { colors, money, WORK_TYPE_LABELS, workTypeColor } from '../../ui/theme';
-import { isPlanned, normalizeWorkType, recordDowntimeHours } from '../../utils/decisionEngine';
+import { CAUSES, isPlanned, normalizeWorkType, recordDowntimeHours } from '../../utils/decisionEngine';
 import { friendlyDbError } from '../../utils/errors';
 import { formatDateTime, formatElapsed, formatHours, useNow } from '../../utils/time';
 
-const CAUSES = ['Wear / age', 'Electrical', 'Mechanical', 'Operator', 'Material / process', 'Unknown'];
 
 export default function FinishWork() {
   const router = useRouter();
